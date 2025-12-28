@@ -1,8 +1,12 @@
 import { onRequest } from "firebase-functions/v2/https";
 import { checkCORS, cors, isAuthPasscode, createErrorResponse } from "./lib/utils/routeUtils.js";
-import {
-  searchSpurgeonIndexService
-} from "./server/searchSpurgeonIndexService.js";
+import dotenv from "dotenv";
+
+import { searchSpurgeonIndexService } from "./server/searchSpurgeonIndexService.js";
+import { restateSpurgeonQuestionService } from "./server/restateSpurgeonQuestionService.js";
+import { generateSpurgeonDevotionalService } from "./server/generateSpurgeonDevotionalService.js";
+
+dotenv.config();
 
 
 const runtimeOptions = {
@@ -33,8 +37,21 @@ const withMiddleware = (handler) => async (request, response) => {
   );
 };
 
-export const searchSpurgeon = onRequest(runtimeOptions, withMiddleware(createHandler(searchSpurgeonIndexService)));
+//Wire up and Exported Cloud Functions
+export const searchSpurgeon = onRequest(
+  runtimeOptions, 
+  withMiddleware(createHandler(searchSpurgeonIndexService)));
+export const restateSpurgeonQuestion = onRequest(
+  runtimeOptions,
+  withMiddleware(createHandler(restateSpurgeonQuestionService)),
+);
+export const generateSpurgeonDevotional = onRequest(
+  runtimeOptions,
+  withMiddleware(createHandler(generateSpurgeonDevotionalService)),
+);
 
 export default {
-  searchSpurgeon
+  searchSpurgeon,
+  restateSpurgeonQuestion,
+  generateSpurgeonDevotional,
 };

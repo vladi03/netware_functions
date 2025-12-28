@@ -1,0 +1,14 @@
+{
+  "name": "spurgeon-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "mocha \"./*.test.js\""
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3vectors": "^3.958.0"
+  },
+  "devDependencies": {
+    "mocha": "^10.4.0"
+  }
+}

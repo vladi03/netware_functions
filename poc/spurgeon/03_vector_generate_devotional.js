@@ -8,7 +8,7 @@ import {
 
 async function generateDevotional({ question, excerpts, model = "gpt-5" }) {
   if (!question || !question.trim()) {
-    throw new Error("Question is required.");
+    throw new Error("Question or topic is required.");
   }
   if (!Array.isArray(excerpts) || !excerpts.length) {
     throw new Error("Excerpts are required.");
