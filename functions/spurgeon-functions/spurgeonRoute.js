@@ -15,6 +15,12 @@ const runtimeOptions = {
   minInstances: Number(process.env.MIN_INSTANCES ?? 0),
 };
 
+const runtimeOptionsBig = {
+  timeoutSeconds: Number(process.env.SPURGEON_TIMEOUT_SECONDS ?? 540),
+  memory: process.env.SPURGEON_MEMORY_BIG ?? "512MiB",
+  minInstances: Number(process.env.MIN_INSTANCES ?? 0),
+};
+
 const buildRequestData = (request) => ({
   body: request.body,
   query: request.query,
@@ -39,7 +45,7 @@ const withMiddleware = (handler) => async (request, response) => {
 
 //Wire up and Exported Cloud Functions
 export const searchSpurgeon = onRequest(
-  runtimeOptions, 
+  runtimeOptionsBig, 
   withMiddleware(createHandler(searchSpurgeonIndexService)));
 export const restateSpurgeonQuestion = onRequest(
   runtimeOptions,
