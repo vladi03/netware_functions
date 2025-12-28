@@ -28,4 +28,5 @@ lib/
 Thumbs.db
 Desktop.ini
 poc/spurgeon/sermon_bodies.ndjson
+functions/spurgeon-functions/sermon_bodies.ndjson
 results/
