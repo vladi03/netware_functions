@@ -1,0 +1,27 @@
+{
+  "functions": [
+    {
+      "source": ".",
+      "runtime": "nodejs22",
+      "codebase": "spurgeon-functions",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log"
+      ]
+    }
+  ],
+  "emulators": {
+    "functions": {
+      "port": 5005
+    },
+    "ui": {
+      "enabled": true
+    },
+    "singleProjectMode": true,
+    "firestore": {
+      "port": 8080
+    }
+  }
+}
