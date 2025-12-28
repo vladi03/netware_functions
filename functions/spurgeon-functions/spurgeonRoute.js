@@ -10,8 +10,8 @@ dotenv.config();
 
 
 const runtimeOptions = {
-  timeoutSeconds: Number(process.env.STARTMEETING_TIMEOUT_SECONDS ?? 540),
-  memory: process.env.STARTMEETING_MEMORY ?? "256MiB",
+  timeoutSeconds: Number(process.env.SPURGEON_TIMEOUT_SECONDS ?? 540),
+  memory: process.env.SPURGEON_MEMORY ?? "256MiB",
   minInstances: Number(process.env.MIN_INSTANCES ?? 0),
 };
 
