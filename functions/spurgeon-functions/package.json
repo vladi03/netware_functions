@@ -10,16 +10,19 @@
   "scripts": {
     "build": "npm run lint",
     "lint": "eslint .",
+    "mcp": "node mcpServer.js",
     "serve": "npm run build && firebase --config firebase.local.json emulators:start --project netware-326600 --only functions:spurgeon-functions",
     "deploy:functions": "firebase deploy --project netware-326600 --only functions:spurgeon-functions",
     "deploy:functions:dev": "firebase deploy --project netware-326600 --only functions:spurgeon-functions"
   },
   "dependencies": {
     "@aws-sdk/client-s3vectors": "^3.958.0",
+    "@modelcontextprotocol/sdk": "^1.25.1",
     "axios": "^1.6.7",
     "dotenv": "^16.4.5",
     "firebase-admin": "^13.6.0",
-    "firebase-functions": "^7.0.0"
+    "firebase-functions": "^7.0.0",
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "eslint": "^9.25.1",

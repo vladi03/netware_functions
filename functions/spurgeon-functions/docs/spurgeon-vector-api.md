@@ -13,6 +13,35 @@ Environment requirements:
 - `AWS_S3_SECRET`
 - `SPURGEON_BODIES_PATH` (optional, defaults to `sermon_bodies.ndjson` in the functions root)
 
+## MCP Endpoint (Streamable HTTP)
+
+MCP is exposed via the Firebase function `spurgeonMcp`. It uses the Streamable HTTP transport over `GET`, `POST`, and `DELETE` to manage MCP sessions. All MCP requests must include the admin passcode header.
+
+Endpoint:
+- Local emulator: `http://127.0.0.1:5005/netware-326600/us-central1/spurgeonMcp`
+- Cloud: `https://us-central1-netware-326600.cloudfunctions.net/spurgeonMcp`
+
+Required headers:
+- `Authorization: Bearer <PASSCODES_ADMIN>`
+- `Accept: application/json, text/event-stream` for `POST`
+- `Accept: text/event-stream` for `GET`
+- `Content-Type: application/json` for `POST`
+- `Mcp-Protocol-Version: 2025-03-26` for non-initialize requests
+- `Mcp-Session-Id` for non-initialize requests (returned in the initialize response)
+
+Notes:
+- Cloud Functions instances are stateless; MCP sessions are in-memory and can break if requests land on different instances.
+- For production MCP, Cloud Run is more reliable.
+
+Initialize curl (local emulator):
+```bash
+curl -X POST "http://127.0.0.1:5005/netware-326600/us-central1/spurgeonMcp" \
+  -H "Authorization: Bearer <PASSCODES_ADMIN>" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-03-26\",\"capabilities\":{},\"clientInfo\":{\"name\":\"curl\",\"version\":\"0.1.0\"}}}"
+```
+
 ## POST spurgeonFunctions-restateSpurgeonQuestion
 
 Restates a question into a 19th-century Spurgeon-style retrieval query.
