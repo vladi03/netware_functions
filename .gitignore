@@ -27,3 +27,5 @@ lib/
 # Windows
 Thumbs.db
 Desktop.ini
+poc/spurgeon/sermon_bodies.ndjson
+results/

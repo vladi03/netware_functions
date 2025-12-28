@@ -10,9 +10,9 @@
   "scripts": {
     "build": "npm run lint",
     "lint": "eslint .",
-    "serve": "npm run build && firebase --config firebase.local.json emulators:start --project netware --only functions:spurgeon-functions",
-    "deploy:functions": "firebase deploy --project netware --only functions:spurgeon-functions",
-    "deploy:functions:dev": "firebase deploy --project netware --only functions:spurgeon-functions"
+    "serve": "npm run build && firebase --config firebase.local.json emulators:start --project netware-326600 --only functions:spurgeon-functions",
+    "deploy:functions": "firebase deploy --project netware-326600 --only functions:spurgeon-functions",
+    "deploy:functions:dev": "firebase deploy --project netware-326600 --only functions:spurgeon-functions"
   },
   "dependencies": {
     "axios": "^1.6.7",

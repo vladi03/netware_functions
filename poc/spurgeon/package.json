@@ -1,0 +1,19 @@
+{
+  "name": "bible-data-processing",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Spurgeon vector QA scripts",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "vector:qa": "node 00_vector_qa_pipeline_orchestrator.js",
+    "test": "node 00_vector_qa_pipeline_orchestrator.js --question \"Union with Christ\"",
+    "download:sermon-bodies": "node download_sermon_bodies.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.693.0",
+    "@aws-sdk/client-s3vectors": "^3.693.0"
+  }
+}
