@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import { searchSpurgeonIndexService } from "./server/searchSpurgeonIndexService.js";
 import { restateSpurgeonQuestionService } from "./server/restateSpurgeonQuestionService.js";
 import { generateSpurgeonDevotionalService } from "./server/generateSpurgeonDevotionalService.js";
+import { chatSpurgeonService } from "./server/chatSpurgeonService.js";
 
 dotenv.config();
 
@@ -55,9 +56,14 @@ export const generateSpurgeonDevotional = onRequest(
   runtimeOptions,
   withMiddleware(createHandler(generateSpurgeonDevotionalService)),
 );
+export const chat = onRequest(
+  runtimeOptions,
+  withMiddleware(createHandler(chatSpurgeonService)),
+);
 
 export default {
   searchSpurgeon,
   restateSpurgeonQuestion,
   generateSpurgeonDevotional,
+  chat,
 };

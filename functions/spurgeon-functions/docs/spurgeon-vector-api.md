@@ -12,6 +12,7 @@ Environment requirements:
 - `AWS_S3_KEY`
 - `AWS_S3_SECRET`
 - `SPURGEON_BODIES_PATH` (optional, defaults to `sermon_bodies.ndjson` in the functions root)
+- `SPURGEON_MCP_URL` (required for `spurgeonFunctions-chat`, points to the `spurgeonMcp` endpoint)
 
 ## MCP Endpoint (Streamable HTTP)
 
@@ -157,6 +158,64 @@ Request JSON:
       "title": "Perseverance in Prayer",
       "url": "https://example.com/sermon/123",
       "excerpt": "Prayer is the breath of the believer..."
+    }
+  ]
+}
+```
+
+## POST spurgeonFunctions-chat
+
+Chat endpoint that speaks in Spurgeon’s voice and can orchestrate MCP tools.
+
+Request JSON:
+```json
+{
+  "message": "How do I persevere in prayer?",
+  "history": [
+    { "role": "user", "content": "Hello." },
+    { "role": "assistant", "content": "Peace be unto you." }
+  ],
+  "model": "gpt-5",
+  "temperature": 0.7
+}
+```
+
+Local curl:
+```bash
+curl -X POST "http://127.0.0.1:5005/netware-326600/us-central1/spurgeonFunctions-chat" \
+  -H "Authorization: Bearer <PASSCODES_ADMIN>" \
+  -H "Content-Type: application/json" \
+  -d "{\"message\":\"How do I persevere in prayer?\",\"model\":\"gpt-5\"}"
+```
+
+Cloud curl:
+```bash
+curl -X POST "https://us-central1-netware-326600.cloudfunctions.net/spurgeonFunctions-chat" \
+  -H "Authorization: Bearer <PASSCODES_ADMIN>" \
+  -H "Content-Type: application/json" \
+  -d "{\"message\":\"How do I persevere in prayer?\",\"model\":\"gpt-5\"}"
+```
+
+Response JSON (example):
+```json
+{
+  "reply": "Beloved, perseverance in prayer is not the strength of your arm but the steadfastness of your faith...",
+  "model": "gpt-5",
+  "usage": {
+    "input_tokens": 512,
+    "cached_input_tokens": 0,
+    "output_tokens": 210,
+    "total_tokens": 722
+  },
+  "tool_runs": [
+    {
+      "name": "spurgeon.search",
+      "arguments": { "question": "How do I persevere in prayer?" },
+      "output": {
+        "query": "How do I persevere in prayer?",
+        "results": []
+      },
+      "isError": false
     }
   ]
 }

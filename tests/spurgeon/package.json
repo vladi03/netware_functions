@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "mocha \"./*.test.js\""
+    "test": "mocha \"./*.test.js\"",
+    "test-chat": "mocha \"./chatSpurgeonService.test.js\""
   },
   "dependencies": {
     "@aws-sdk/client-s3vectors": "^3.958.0"
