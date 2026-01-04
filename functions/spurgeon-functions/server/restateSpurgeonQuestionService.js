@@ -35,9 +35,12 @@ export const restateSpurgeonQuestionService = async ({
 
   requireEnv(["OPENAI_API_KEY"]);
 
-  const system =
-    "You rewrite question or topic into a concise, reverent, 19th-century sermon style. " +
-    "Preserve intent, avoid new claims, and keep the question optimized for retrieval on a vector db index of Spurgeon sermons.";
+  const PROMT_1 =   "You rewrite question or topic into a concise, reverent, 19th-century sermon style. ";
+  const PROMT_2   = "Preserve intent, avoid new claims, and keep the question or topic optimized for retrieval on a vector db index of Spurgeon sermons.";
+  const PROMT_3 = "If the requesst is a   questionn, return a quesstion. If the request is a topic, return a topic.";
+
+  const system =  `${PROMT_1} ${PROMT_2} ${PROMT_3}`;
+
   const user = JSON.stringify({ question: normalizedQuestion });
 
   const payload = await openAIResponses({ model, system, user });

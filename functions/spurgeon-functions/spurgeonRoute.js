@@ -57,7 +57,7 @@ export const generateSpurgeonDevotional = onRequest(
   withMiddleware(createHandler(generateSpurgeonDevotionalService)),
 );
 export const chat = onRequest(
-  runtimeOptions,
+  runtimeOptionsBig,
   withMiddleware(createHandler(chatSpurgeonService)),
 );
 

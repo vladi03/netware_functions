@@ -1,14 +1,15 @@
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-
 import {
   extractResponseText,
   getUsageFromResponses,
   requireEnv,
 } from "../lib/utils/spurgeonVectorUtils.js";
 import { ExternalApiError, ValidationError } from "../lib/utils/routeUtils.js";
+import { searchSpurgeonIndexService } from "./searchSpurgeonIndexService.js";
 
 const DEFAULT_MODEL = "gpt-5";
+const CLASSIFICATION_MODEL = "gpt-5-nano";
+const DEFAULT_TOPK_THEOLOGICAL = 2;
+const DEFAULT_TOPK_DEVOTIONAL = 3;
 
 const SYSTEM_PROMPT =
   "You are Charles Spurgeon, speaking in a warm, pastoral 19th-century tone. " +
@@ -26,10 +27,6 @@ const CLASSIFICATION_SYSTEM =
   "Casual means greetings, small talk, or simple pleasantries. " +
   "Inappropriate means abusive, sexual, hateful, illegal, or unrelated to a theological discussion. " +
   "Reply with JSON only in the format {\"category\":\"theological|casual|create_devotional|inappropriate\",\"reason\":\"short\"}.";
-const SEARCH_PARAM_SYSTEM =
-  "Select a search topK value for the vector search. " +
-  "Reply with JSON only in the format {\"topK\":number}. " +
-  "Choose a small number between 2 and 3 (default 5) based on how broad the request is.";
 
 const normalizeString = (value) => {
   if (value === undefined || value === null) {
@@ -68,26 +65,6 @@ const buildInputMessages = (history, message, searchContext, extraInstruction) =
   }
   input.push({ role: "user", content: message });
   return input;
-};
-
-const formatToolOutput = (result) => {
-  if (!result) {
-    return { error: "No tool result returned." };
-  }
-  if (result.structuredContent) {
-    return result.structuredContent;
-  }
-  const blocks = result.content || [];
-  const text = blocks
-    .map((block) => {
-      if (block.type === "text") {
-        return block.text;
-      }
-      return JSON.stringify(block);
-    })
-    .filter(Boolean)
-    .join("\n");
-  return { text };
 };
 
 const outOfScopeReply = () =>
@@ -174,139 +151,141 @@ const classifyMessage = async (message, model) => {
   return "theological";
 };
 
-const selectSearchTopK = async (message, model) => {
-  const response = await callOpenAI(
-    {
-      model,
-      input: [
-        { role: "system", content: SEARCH_PARAM_SYSTEM },
-        { role: "user", content: message },
-      ],
-    },
-    { retryWithoutTemperature: true }
-  );
-  const text = extractResponseText(response);
-  const parsed = parseClassification(text);
-  const topK = Number(parsed?.topK);
-  if (Number.isInteger(topK) && topK >= 3 && topK <= 8) {
-    return topK;
-  }
-  return 5;
+const trimSearchResults = (payload) => {
+  const results = Array.isArray(payload?.results) ? payload.results : [];
+  return {
+    results: results.map((result) => ({
+      title: result?.title ?? "",
+      url: result?.url ?? "",
+      sermon_id: result?.sermon_id ?? "",
+      excerpt: result?.excerpt ?? "",
+    })),
+  };
 };
-const createMcpClient = async () => {
-  requireEnv(["SPURGEON_MCP_URL", "PASSCODES_ADMIN"]);
-  const url = new URL(process.env.SPURGEON_MCP_URL);
-  const transport = new StreamableHTTPClientTransport(url, {
-    requestInit: {
-      headers: {
-        Authorization: `Bearer ${process.env.PASSCODES_ADMIN}`,
-      },
-    },
-  });
-  const client = new Client(
-    { name: "spurgeon-chat-service", version: "1.0.0" },
-    { capabilities: {} }
-  );
-  await client.connect(transport);
-  return { client, transport };
+
+const runSearch = async (question, topK) => {
+  try {
+    const payload = await searchSpurgeonIndexService({
+      body: { question, topK },
+      query: {},
+    });
+    return { output: trimSearchResults(payload), isError: false };
+  } catch (error) {
+    return {
+      output: { error: error?.message ? String(error.message) : String(error) },
+      isError: true,
+    };
+  }
 };
 
 export const chatSpurgeonService = async ({ body = {}, query = {} }) => {
-  const message =
-    body?.message ??
-    query?.message ??
-    body?.question ??
-    query?.question ??
-    body?.prompt ??
-    query?.prompt;
-  const normalizedMessage = normalizeString(message);
-  if (!normalizedMessage) {
-    throw new ValidationError("Message is required.");
-  }
-
-  const history = Array.isArray(body?.history) ? body.history : [];
-  const model = normalizeString(body?.model || DEFAULT_MODEL);
-  const temperature =
-    body?.temperature === undefined ? undefined : Number(body.temperature);
-  const hasTemperature = Number.isFinite(temperature);
-
-  const toolRuns = [];
-  let response;
-  let totalUsage = {
-    input_tokens: 0,
-    cached_input_tokens: 0,
-    output_tokens: 0,
-    total_tokens: 0,
-  };
-
-  const category = await classifyMessage(normalizedMessage, model);
-
-  if (category === "casual") {
-    response = await callOpenAI(
-      {
-        model,
-        input: buildInputMessages(history, normalizedMessage),
-        ...(hasTemperature ? { temperature } : {}),
-      },
-      { retryWithoutTemperature: true }
-    );
-    totalUsage = getUsageFromResponses(response);
-    const reply = extractResponseText(response);
-    if (!reply) {
-      throw new ExternalApiError("No text returned from model.", 502, { model });
-    }
-    return {
-      reply,
-      model,
-      usage: totalUsage,
-      tool_runs: toolRuns,
-    };
-  }
-
-  if (category === "inappropriate") {
-    return {
-      reply: outOfScopeReply(),
-      model,
-      usage: totalUsage,
-      tool_runs: toolRuns,
-    };
-  }
-
-  const { client, transport } = await createMcpClient();
-  let searchOutput = null;
-  const devotionalInstruction =
-    "The user asked for a devotional. Write a devotional in Spurgeon's voice " +
-    "using the provided search excerpts as the grounding material.";
-  const theologicalInstruction = "Keep the response under 200 words.";
+  const shouldLogMemory =
+    String(process.env.SPURGEON_LOG_MEMORY || "").toLowerCase() === "true";
+  const startMemory = shouldLogMemory ? process.memoryUsage() : null;
+  const startTime = shouldLogMemory ? Date.now() : null;
 
   try {
-    const topK = await selectSearchTopK(normalizedMessage, model);
-    let toolResult;
-    let isError = false;
-    try {
-      toolResult = await client.callTool({
-        name: SPURGEON_SEARCH_TOOL,
-        arguments: { question: normalizedMessage, topK },
-      });
-      isError = Boolean(toolResult?.isError);
-    } catch (error) {
-      isError = true;
-      toolResult = {
-        content: [{ type: "text", text: String(error) }],
-        isError: true,
+    const message =
+      body?.message ??
+      query?.message ??
+      body?.question ??
+      query?.question ??
+      body?.prompt ??
+      query?.prompt;
+    const normalizedMessage = normalizeString(message);
+    if (!normalizedMessage) {
+      throw new ValidationError("Message is required.");
+    }
+
+    const history = Array.isArray(body?.history) ? body.history : [];
+    const model = normalizeString(body?.model || DEFAULT_MODEL);
+    const temperature =
+      body?.temperature === undefined ? undefined : Number(body.temperature);
+    const hasTemperature = Number.isFinite(temperature);
+
+    const toolRuns = [];
+    let response;
+    let totalUsage = {
+      input_tokens: 0,
+      cached_input_tokens: 0,
+      output_tokens: 0,
+      total_tokens: 0,
+    };
+
+    const classificationPromise = classifyMessage(
+      normalizedMessage,
+      CLASSIFICATION_MODEL
+    );
+    const theologicalSearchPromise = runSearch(
+      normalizedMessage,
+      DEFAULT_TOPK_THEOLOGICAL
+    );
+    const devotionalSearchPromise = runSearch(
+      normalizedMessage,
+      DEFAULT_TOPK_DEVOTIONAL
+    );
+
+    const category = await classificationPromise;
+
+    if (category === "casual") {
+      response = await callOpenAI(
+        {
+          model,
+          input: buildInputMessages(history, normalizedMessage),
+          ...(hasTemperature ? { temperature } : {}),
+        },
+        { retryWithoutTemperature: true }
+      );
+      totalUsage = getUsageFromResponses(response);
+      const reply = extractResponseText(response);
+      if (!reply) {
+        throw new ExternalApiError("No text returned from model.", 502, { model });
+      }
+      return {
+        reply,
+        model,
+        usage: totalUsage,
+        tool_runs: toolRuns,
       };
     }
 
-    searchOutput = formatToolOutput(toolResult);
+    if (category === "inappropriate") {
+      return {
+        reply: outOfScopeReply(),
+        model,
+        usage: totalUsage,
+        tool_runs: toolRuns,
+      };
+    }
+
+    let searchOutput = null;
+    const devotionalInstruction =
+      "The user asked for a devotional. Write a devotional in Spurgeon's voice " +
+      "using the provided search excerpts as the grounding material.";
+    const theologicalInstruction = "Keep the response under 200 words.";
+
+    const topK =
+      category === "create_devotional"
+        ? DEFAULT_TOPK_DEVOTIONAL
+        : DEFAULT_TOPK_THEOLOGICAL;
+    const searchPromise =
+      topK === DEFAULT_TOPK_DEVOTIONAL
+        ? devotionalSearchPromise
+        : theologicalSearchPromise;
+
+    const { output, isError } = await searchPromise;
+    searchOutput = output;
     toolRuns.push({
       name: SPURGEON_SEARCH_TOOL,
-      arguments: { question: normalizedMessage },
+      arguments: { question: normalizedMessage, topK },
       output: searchOutput,
       isError,
     });
 
     const extraInstruction =
-      category === "create_devotional" ? devotionalInstruction : theologicalInstruction;
+      category === "create_devotional"
+        ? devotionalInstruction
+        : theologicalInstruction;
     const input = buildInputMessages(
       history,
       normalizedMessage,
@@ -323,19 +302,35 @@ export const chatSpurgeonService = async ({ body = {}, query = {} }) => {
       { retryWithoutTemperature: true }
     );
     totalUsage = getUsageFromResponses(response);
+
+    const reply = extractResponseText(response);
+    if (!reply) {
+      throw new ExternalApiError("No text returned from model.", 502, { model });
+    }
+
+    return {
+      reply,
+      model,
+      usage: totalUsage,
+      tool_runs: toolRuns,
+    };
   } finally {
-    await transport.close();
+    if (shouldLogMemory && startMemory && startTime !== null) {
+      const endMemory = process.memoryUsage();
+      const elapsedMs = Date.now() - startTime;
+      const delta = {
+        rss: endMemory.rss - startMemory.rss,
+        heapTotal: endMemory.heapTotal - startMemory.heapTotal,
+        heapUsed: endMemory.heapUsed - startMemory.heapUsed,
+        external: endMemory.external - startMemory.external,
+        arrayBuffers: endMemory.arrayBuffers - startMemory.arrayBuffers,
+      };
+      console.log("[chatSpurgeonService] memory", {
+        elapsed_ms: elapsedMs,
+        start: startMemory,
+        end: endMemory,
+        delta,
+      });
+    }
   }
-
-  const reply = extractResponseText(response);
-  if (!reply) {
-    throw new ExternalApiError("No text returned from model.", 502, { model });
-  }
-
-  return {
-    reply,
-    model,
-    usage: totalUsage,
-    tool_runs: toolRuns,
-  };
 };
