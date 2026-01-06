@@ -1,0 +1,27 @@
+{
+  "title": "Setup Quality & Maintainability Standards for React SPA",
+  "description": "Configure linting, formatting, and testing infrastructure for the React SPA project to ensure code quality and maintainability. Includes ESLint configuration for React/JavaScript, Prettier for code formatting, Jest and React Testing Library for unit testing, and comprehensive documentation.",
+  "steps": [
+    "Create SPA project directory structure at /workspace/spa with standard React folder organization (src/, public/, src/components/, src/services/, src/utils/, src/__tests__/)",
+    "Initialize package.json for the SPA with React 18.x dependencies, including react, react-dom, and development dependencies",
+    "Configure ESLint for React JavaScript projects: install eslint, eslint-plugin-react, eslint-plugin-react-hooks, and eslint-plugin-jsx-a11y",
+    "Create .eslintrc.json in the SPA root with React-specific rules, ES6+ syntax support, and best practices enforcement (no TypeScript rules)",
+    "Configure Prettier for consistent code formatting: install prettier, eslint-config-prettier, and eslint-plugin-prettier to prevent ESLint/Prettier conflicts",
+    "Create .prettierrc.json with standard formatting rules (semi: true, singleQuote: true, trailingComma: 'es5', tabWidth: 2, printWidth: 100)",
+    "Add .prettierignore file to exclude node_modules, build, and dist directories from formatting",
+    "Install and configure Jest testing framework with @testing-library/react, @testing-library/jest-dom, and @testing-library/user-event",
+    "Create jest.config.js with appropriate settings for React testing (jsdom environment, coverage thresholds, module name mapping)",
+    "Set up testing utilities in src/utils/testUtils.js with custom render functions and common test helpers",
+    "Create example unit tests for at least 3 common React component patterns: functional component with hooks, component with props, and component with user interactions",
+    "Add npm scripts to package.json: 'lint' (eslint src/), 'lint:fix' (eslint --fix), 'format' (prettier --write), 'format:check' (prettier --check), 'test' (jest), 'test:watch' (jest --watch), 'test:coverage' (jest --coverage)",
+    "Create pre-commit hook configuration (using husky) to run linting and formatting checks before commits",
+    "Create comprehensive README.md for the SPA with sections: project overview, prerequisites, installation, available scripts, project structure, coding standards, testing guidelines, and troubleshooting",
+    "Add development workflow documentation including how to run the SPA locally, how to run tests, and how to integrate with the Firebase functions backend",
+    "Configure VSCode settings recommendations in .vscode/settings.json for automatic formatting on save and ESLint integration",
+    "Create .env.example file with required environment variables (REACT_APP_API_BASE_URL, REACT_APP_PASSCODES_ADMIN) and documentation for each",
+    "Add .gitignore file specific to React SPA projects (node_modules, build, .env, coverage, .DS_Store, etc.)",
+    "Verify all linting rules pass with sample React components and fix any configuration issues",
+    "Verify all tests pass and coverage reporting works correctly",
+    "Document the relationship between the SPA and the Spurgeon Vector API backend in the README with example API calls and authentication setup"
+  ]
+}
