@@ -1,0 +1,21 @@
+{
+  "title": "Implement Loading and Error Handling States for Spurgeon API Calls",
+  "description": "Create a robust API handling layer for the React SPA that provides loading states, error handling with user-friendly messages, and retry functionality for all Spurgeon API endpoints (spurgeonFunctions-chat, spurgeonFunctions-restateSpurgeonQuestion, spurgeonFunctions-searchSpurgeon, spurgeonFunctions-generateSpurgeonDevotional). This includes building reusable hooks, UI components for loading/error states, and integration patterns following React best practices.",
+  "steps": [
+    "Create custom React hook `useSpurgeonApi` in `web/src/hooks/useSpurgeonApi.js` that manages loading state, error state, retry logic, and API call lifecycle for any Spurgeon endpoint",
+    "Implement `web/src/services/spurgeonApiClient.js` with axios/fetch wrapper that handles authentication (Bearer token from env), request/response formatting, and standardized error parsing for all Spurgeon endpoints",
+    "Create `web/src/components/LoadingSpinner.jsx` component with CSS animations for inline loading state display during API calls",
+    "Create `web/src/components/ErrorMessage.jsx` component that displays user-friendly error messages with retry button and handles network errors, 4xx client errors, and 5xx server errors distinctly",
+    "Build endpoint-specific hooks in `web/src/hooks/` for each API: `useChatSpurgeon.js`, `useRestateQuestion.js`, `useSearchSpurgeon.js`, `useGenerateDevotional.js` that utilize the base `useSpurgeonApi` hook",
+    "Implement retry logic in `useSpurgeonApi` hook with exponential backoff for transient failures and manual retry trigger for user-initiated retries",
+    "Create `web/src/constants/apiErrorMessages.js` to map error codes/types to user-friendly messages (e.g., 401 -> 'Authentication failed', network error -> 'Unable to connect to server')",
+    "Add loading skeleton components in `web/src/components/LoadingSkeleton.jsx` for content placeholders during API calls (chat messages, search results, devotional text)",
+    "Implement global error boundary in `web/src/components/ErrorBoundary.jsx` to catch and display unexpected React errors gracefully",
+    "Create `web/src/utils/apiHelpers.js` with utility functions for request cancellation (AbortController), request deduplication, and timeout handling",
+    "Add environment configuration in `web/.env.example` and `web/src/config/apiConfig.js` for base URL switching between local emulator and production endpoints",
+    "Write integration tests in `web/src/hooks/__tests__/useSpurgeonApi.test.js` to verify loading states, error handling, and retry functionality with mocked API responses",
+    "Update all existing UI components that make API calls to use the new hooks and display LoadingSpinner/ErrorMessage components appropriately",
+    "Add accessibility attributes (aria-live, aria-busy) to loading and error components for screen reader support",
+    "Document the API error handling patterns and usage examples in `web/README.md` including example code for implementing new API calls"
+  ]
+}
