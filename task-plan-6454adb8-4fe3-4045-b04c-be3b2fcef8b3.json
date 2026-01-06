@@ -1,0 +1,21 @@
+{
+  "title": "Setup React SPA Project Structure in /web Folder",
+  "description": "Create a new React SPA project in a top-level 'web' folder using Vite as the build tool. The project must use JavaScript (not TypeScript), support local development with 'npm run dev', and production builds with 'npm run build'. The implementation must not affect the existing backend code in /functions, /poc, and /tests folders.",
+  "steps": [
+    "Create /workspace/web folder at the repository root level",
+    "Initialize new Vite React project with JavaScript template in /web folder using 'npm create vite@latest . -- --template react'",
+    "Install project dependencies by running 'npm install' in /web folder",
+    "Configure vite.config.js with appropriate settings: dev server port (default 5173), build output directory (dist), and base path configuration",
+    "Create basic React application structure: /web/src/App.jsx as main component, /web/src/main.jsx as entry point, /web/src/index.css for global styles",
+    "Add .gitignore file in /web folder with patterns: node_modules/, dist/, .env.local, .env.*.local, *.log",
+    "Verify package.json scripts are correctly configured: 'dev' script for local development server, 'build' script for production build, 'preview' script for production preview",
+    "Create /web/public folder for static assets (favicon, images, etc.)",
+    "Add README.md in /web folder documenting: how to install dependencies, how to run dev server, how to build for production, project structure overview",
+    "Test local development by running 'npm run dev' and verifying the React app loads at http://localhost:5173",
+    "Test production build by running 'npm build' and verifying dist folder is created with bundled assets",
+    "Verify the new /web folder does not affect existing backend functionality by checking that existing npm scripts in /functions and /tests still work independently",
+    "Add /web folder reference to root .gitignore if needed to ensure proper git tracking (node_modules and dist should be ignored)",
+    "Create placeholder component structure: /web/src/components folder for future UI components, /web/src/services folder for API integration with backend endpoints",
+    "Document environment variable pattern for connecting to Spurgeon API endpoints: create .env.example file showing VITE_API_BASE_URL and VITE_ADMIN_PASSCODE placeholders"
+  ]
+}
