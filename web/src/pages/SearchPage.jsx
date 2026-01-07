@@ -4,8 +4,8 @@ import LoadingSpinner from '../components/LoadingSpinner.jsx';
 
 function SearchPage() {
   const [question, setQuestion] = useState('');
-  const [topK, setTopK] = useState(5);
-  const [contextChars, setContextChars] = useState(200);
+  const [topK, setTopK] = useState('5');
+  const [contextChars, setContextChars] = useState('200');
   const [results, setResults] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -22,10 +22,14 @@ function SearchPage() {
     setIsLoading(true);
 
     try {
+      const parsedTopK = parseInt(topK, 10);
+      const parsedContextChars = parseInt(contextChars, 10);
+      const safeTopK = Number.isFinite(parsedTopK) ? parsedTopK : 5;
+      const safeContextChars = Number.isFinite(parsedContextChars) ? parsedContextChars : 200;
       const response = await searchSpurgeon(
         question.trim(),
-        topK,
-        contextChars
+        safeTopK,
+        safeContextChars
       );
       setResults(response);
     } catch (err) {
@@ -74,7 +78,7 @@ function SearchPage() {
                 min="1"
                 max="20"
                 value={topK}
-                onChange={(e) => setTopK(parseInt(e.target.value, 10))}
+                onChange={(e) => setTopK(e.target.value)}
                 disabled={isLoading}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
@@ -91,7 +95,7 @@ function SearchPage() {
                 max="1000"
                 step="50"
                 value={contextChars}
-                onChange={(e) => setContextChars(parseInt(e.target.value, 10))}
+                onChange={(e) => setContextChars(e.target.value)}
                 disabled={isLoading}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
