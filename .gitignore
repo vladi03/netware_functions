@@ -30,3 +30,8 @@ Desktop.ini
 poc/spurgeon/sermon_bodies.ndjson
 functions/spurgeon-functions/sermon_bodies.ndjson
 results/
+
+# Web frontend
+web/dist/
+web/node_modules/
+web/.env.local
