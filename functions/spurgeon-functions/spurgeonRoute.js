@@ -18,7 +18,7 @@ const runtimeOptions = {
 
 const runtimeOptionsBig = {
   timeoutSeconds: Number(process.env.SPURGEON_TIMEOUT_SECONDS ?? 540),
-  memory: process.env.SPURGEON_MEMORY_BIG ?? "512MiB",
+  memory: process.env.SPURGEON_MEMORY_BIG ?? "1GiB",
   minInstances: Number(process.env.MIN_INSTANCES ?? 0),
 };
 
