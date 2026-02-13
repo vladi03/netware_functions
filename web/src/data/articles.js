@@ -3,7 +3,7 @@ import torahMosaicReportVladMartinez from './articles/torah-mosaic-report-vlad-m
 export const articles = [
   {
     slug: 'torah-mosaic-report-vlad-martinez',
-    title: 'Torah Mosaic Report',
+    title: 'Review: "The Torah Mosaic" by Tracy J. McKenzie',
     author: 'Vlad Martinez',
     published: 'February 13, 2026',
     abstract:
