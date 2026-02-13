@@ -9,10 +9,6 @@ function ArticlesIndexPage() {
           Article Collection
         </p>
         <h2 className="text-3xl font-semibold">Writing and review library</h2>
-        <p className="mt-3 max-w-2xl text-sky-100">
-          A cleanly curated article index with professional formatting and
-          direct access to each full read.
-        </p>
       </header>
 
       <div className="grid gap-5">
