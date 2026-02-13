@@ -1,6 +1,18 @@
 import torahMosaicReportVladMartinez from './articles/torah-mosaic-report-vlad-martinez.txt?raw';
+import john3112ExegeticalAnalysis from './articles/john-3-1-12-an-exegetical-analysis.txt?raw';
 
 export const articles = [
+  {
+    slug: 'john-3-1-12-an-exegetical-analysis',
+    title: 'John 3:1-12 An Exegetical Analysis',
+    author: 'Vladimir Martinez',
+    published: 'March 5, 2025',
+    abstract:
+      "This paper examines Jesus' night conversation with Nicodemus in John 3:1-12 and argues that spiritual regeneration is the central message of the passage. It situates the encounter within John's Gospel narrative and the broader conflict between Jesus and Israel's religious leadership. The essay traces Old Testament links, especially Ezekiel's promise of cleansing and new heart language, to show why Jesus expected Nicodemus to understand new birth themes. It also analyzes Jesus' rhetorical strategy, including His emphatic statements and witness language, as a direct challenge to self-reliant religion. The theological conclusion is that rebirth by the Holy Spirit is necessary for salvation and remains foundational for Christian holiness and assurance. A full bibliography and source footnotes are included in the published article text.",
+    readingMinutes: '16 min read',
+    audioSrc: '/audio/john-3-1-12-an-exegetical-analysis.mp3',
+    body: john3112ExegeticalAnalysis,
+  },
   {
     slug: 'torah-mosaic-report-vlad-martinez',
     title: 'Review: "The Torah Mosaic" by Tracy J. McKenzie',

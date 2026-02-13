@@ -6,28 +6,40 @@ function ArticlePage() {
   const { slug } = useParams();
   const article = getArticleBySlug(slug);
   const audioRef = useRef(null);
-  const paragraphRefs = useRef([]);
+  const blockRefs = useRef([]);
   const lastScrolledIndexRef = useRef(-1);
   const [audioDuration, setAudioDuration] = useState(0);
-  const [activeParagraphIndex, setActiveParagraphIndex] = useState(-1);
+  const [activeBlockIndex, setActiveBlockIndex] = useState(-1);
 
-  const paragraphs = useMemo(
+  const blocks = useMemo(
     () =>
       article
         ? article.body
             .split(/\r?\n+/)
             .map((line) => line.trim())
             .filter(Boolean)
+            .map((line) => {
+              if (line.startsWith('## ')) {
+                return { type: 'heading', text: line.slice(3).trim() };
+              }
+              if (line.startsWith('- ')) {
+                return { type: 'bullet', text: line.slice(2).trim() };
+              }
+              if (/^\[\d+\]\s+/.test(line)) {
+                return { type: 'footnote', text: line };
+              }
+              return { type: 'paragraph', text: line };
+            })
         : [],
     [article]
   );
 
-  const paragraphTiming = useMemo(() => {
-    if (!paragraphs.length || !audioDuration) {
+  const blockTiming = useMemo(() => {
+    if (!blocks.length || !audioDuration) {
       return [];
     }
 
-    const weights = paragraphs.map((paragraph) => Math.max(paragraph.length, 1));
+    const weights = blocks.map((block) => Math.max(block.text.length, 1));
     const totalWeight = weights.reduce((sum, value) => sum + value, 0);
     let elapsed = 0;
 
@@ -37,21 +49,21 @@ function ArticlePage() {
       elapsed += duration;
       return { start, end: elapsed };
     });
-  }, [paragraphs, audioDuration]);
+  }, [blocks, audioDuration]);
 
-  const findActiveParagraph = (currentTime) => {
-    if (!paragraphTiming.length) {
+  const findActiveBlock = (currentTime) => {
+    if (!blockTiming.length) {
       return -1;
     }
 
-    for (let index = 0; index < paragraphTiming.length; index += 1) {
-      const window = paragraphTiming[index];
+    for (let index = 0; index < blockTiming.length; index += 1) {
+      const window = blockTiming[index];
       if (currentTime >= window.start && currentTime < window.end) {
         return index;
       }
     }
 
-    return paragraphTiming.length - 1;
+    return blockTiming.length - 1;
   };
 
   const handleAudioLoadedMetadata = () => {
@@ -65,34 +77,34 @@ function ArticlePage() {
     if (!audioRef.current) {
       return;
     }
-    const nextIndex = findActiveParagraph(audioRef.current.currentTime || 0);
-    setActiveParagraphIndex(nextIndex);
+    const nextIndex = findActiveBlock(audioRef.current.currentTime || 0);
+    setActiveBlockIndex(nextIndex);
   };
 
   const handleAudioEnded = () => {
-    setActiveParagraphIndex(-1);
+    setActiveBlockIndex(-1);
   };
 
   useEffect(() => {
-    if (activeParagraphIndex < 0) {
+    if (activeBlockIndex < 0) {
       return;
     }
 
-    if (lastScrolledIndexRef.current === activeParagraphIndex) {
+    if (lastScrolledIndexRef.current === activeBlockIndex) {
       return;
     }
 
-    const element = paragraphRefs.current[activeParagraphIndex];
+    const element = blockRefs.current[activeBlockIndex];
     if (!element) {
       return;
     }
 
-    lastScrolledIndexRef.current = activeParagraphIndex;
+    lastScrolledIndexRef.current = activeBlockIndex;
     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, [activeParagraphIndex]);
+  }, [activeBlockIndex]);
 
   useEffect(() => {
-    setActiveParagraphIndex(-1);
+    setActiveBlockIndex(-1);
     setAudioDuration(0);
     lastScrolledIndexRef.current = -1;
     if (audioRef.current) {
@@ -149,27 +161,56 @@ function ArticlePage() {
       ) : null}
 
       <div className="space-y-6 rounded-2xl border border-blue-100 bg-white p-6 shadow-sm">
-        {activeParagraphIndex >= 0 ? (
+        {activeBlockIndex >= 0 ? (
           <div className="sticky top-3 z-10 rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-sky-800 shadow-sm">
-            Now reading paragraph {activeParagraphIndex + 1} of {paragraphs.length}
+            Now reading section {activeBlockIndex + 1} of {blocks.length}
           </div>
         ) : null}
 
-        {paragraphs.map((paragraph, index) => (
-          <p
-            key={`${article.slug}-${index}`}
-            ref={(element) => {
-              paragraphRefs.current[index] = element;
-            }}
-            className={`rounded-md border-l-4 px-3 py-2 leading-relaxed transition-all duration-200 ${
-              index === activeParagraphIndex
-                ? 'border-sky-500 bg-sky-200/70 text-slate-900 shadow-sm'
-                : 'border-transparent bg-white text-slate-700'
-            }`}
-          >
-            {paragraph}
-          </p>
-        ))}
+        {blocks.map((block, index) => {
+          const isActive = index === activeBlockIndex;
+          const stateClass = isActive
+            ? 'border-sky-500 bg-sky-200/70 text-slate-900 shadow-sm'
+            : 'border-transparent bg-white text-slate-700';
+          const sharedProps = {
+            key: `${article.slug}-${index}`,
+            ref: (element) => {
+              blockRefs.current[index] = element;
+            },
+            className: `rounded-md border-l-4 px-3 py-2 transition-all duration-200 ${stateClass}`,
+          };
+
+          if (block.type === 'heading') {
+            return (
+              <h2 {...sharedProps} className={`${sharedProps.className} text-2xl font-semibold`}>
+                {block.text}
+              </h2>
+            );
+          }
+
+          if (block.type === 'bullet') {
+            return (
+              <p {...sharedProps} className={`${sharedProps.className} leading-relaxed`}>
+                {'• '}
+                {block.text}
+              </p>
+            );
+          }
+
+          if (block.type === 'footnote') {
+            return (
+              <p {...sharedProps} className={`${sharedProps.className} text-sm leading-relaxed text-slate-600`}>
+                {block.text}
+              </p>
+            );
+          }
+
+          return (
+            <p {...sharedProps} className={`${sharedProps.className} leading-relaxed`}>
+              {block.text}
+            </p>
+          );
+        })}
       </div>
 
       <Link to="/" className="inline-flex items-center text-sm font-medium text-sky-700">
