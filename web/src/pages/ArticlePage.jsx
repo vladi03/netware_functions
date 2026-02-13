@@ -95,6 +95,9 @@ function ArticlePage() {
     setActiveParagraphIndex(-1);
     setAudioDuration(0);
     lastScrolledIndexRef.current = -1;
+    if (audioRef.current) {
+      audioRef.current.load();
+    }
   }, [slug]);
 
   if (!article) {
@@ -132,7 +135,7 @@ function ArticlePage() {
             <audio
               ref={audioRef}
               controls
-              preload="metadata"
+              preload="auto"
               className="w-full"
               src={article.audioSrc}
               onLoadedMetadata={handleAudioLoadedMetadata}
