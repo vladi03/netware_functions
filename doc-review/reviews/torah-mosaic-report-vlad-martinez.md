@@ -9,7 +9,4 @@ Default review only:
 
 ## Findings
 
-1. `NEW` `Awkward phrasing`
-- Original: "     This is the state to which humanity desires to be returned and restored to after the fall."
-- Issue: Mixed passive/active intent creates awkward meaning (`desires to be returned`).
-- Suggested fix: "This is the state to which humanity desires to return and be restored after the fall."
+None
