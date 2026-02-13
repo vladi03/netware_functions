@@ -35,3 +35,6 @@ results/
 web/dist/
 web/node_modules/
 web/.env.local
+
+# Document sources
+*.docx
