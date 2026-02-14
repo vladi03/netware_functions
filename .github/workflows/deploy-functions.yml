@@ -36,10 +36,6 @@ jobs:
         run: npm ci
         working-directory: functions/spurgeon-functions
 
-      - name: Build functions
-        run: npm run build
-        working-directory: functions/spurgeon-functions
-
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
