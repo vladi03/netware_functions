@@ -16,6 +16,8 @@ ui-debug.log
 
 # Functions build artifacts
 lib/
+!functions/spurgeon-functions/lib/
+!functions/spurgeon-functions/lib/**
 
 # env
 .env
