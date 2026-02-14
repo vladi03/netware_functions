@@ -5,10 +5,12 @@ import DevotionalGeneratorPage from './pages/DevotionalGeneratorPage.jsx';
 import SearchPage from './pages/SearchPage.jsx';
 import ArticlesIndexPage from './pages/ArticlesIndexPage.jsx';
 import ArticlePage from './pages/ArticlePage.jsx';
+import ScrollToTop from './components/ScrollToTop.jsx';
 
 function App() {
   return (
     <div className="min-h-screen bg-gray-50">
+      <ScrollToTop />
       {/* Navigation */}
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
