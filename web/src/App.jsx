@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import ChatPage from './pages/ChatPage.jsx';
 import DevotionalGeneratorPage from './pages/DevotionalGeneratorPage.jsx';
@@ -7,6 +7,12 @@ import ArticlesIndexPage from './pages/ArticlesIndexPage.jsx';
 import ArticlePage from './pages/ArticlePage.jsx';
 
 function App() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
@@ -46,7 +52,67 @@ function App() {
                 </Link>
               </div>
             </div>
+            <div className="flex items-center sm:hidden">
+              <button
+                type="button"
+                className="inline-flex items-center justify-center rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-controls="mobile-menu"
+                aria-expanded={isMobileMenuOpen}
+                onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
+              >
+                <span className="sr-only">Open main menu</span>
+                <svg
+                  className="h-6 w-6"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  aria-hidden="true"
+                >
+                  {isMobileMenuOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </button>
+            </div>
           </div>
+          {isMobileMenuOpen && (
+            <div className="sm:hidden" id="mobile-menu">
+              <div className="space-y-1 pb-3 pt-2">
+                <Link
+                  to="/"
+                  onClick={closeMobileMenu}
+                  className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                >
+                  Articles
+                </Link>
+                <Link
+                  to="/chat"
+                  onClick={closeMobileMenu}
+                  className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                >
+                  Chat
+                </Link>
+                <Link
+                  to="/devotional"
+                  onClick={closeMobileMenu}
+                  className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                >
+                  Devotional Generator
+                </Link>
+                <Link
+                  to="/search"
+                  onClick={closeMobileMenu}
+                  className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                >
+                  Search
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
