@@ -175,6 +175,35 @@ For Firebase Hosting:
 firebase deploy --only hosting
 ```
 
+### GitHub Actions Deployment (Firebase Hosting)
+
+This repo includes `.github/workflows/deploy-web.yml` for production deploys.
+
+It runs on:
+- Push to `main` when files under `web/` change
+- Manual trigger via `workflow_dispatch`
+
+The workflow does this:
+- Installs web dependencies
+- Authenticates with Firebase using a GitHub secret
+- Pulls `PASSCODES_ADMIN` from Firebase Secret Manager using Firebase CLI
+- Builds `web/` with `VITE_` env values
+- Deploys hosting site `netware-spurgeon`
+
+GitHub repo settings required:
+- Secret: `FIREBASE_SERVICE_ACCOUNT_NETWARE_326600` (service account JSON)
+- Secret: `VITE_PASSCODES_ADMIN` (optional fallback if Firebase secret pull fails)
+- Variable (optional): `VITE_API_BASE_URL`
+If omitted, workflow defaults to `https://us-central1-netware-326600.cloudfunctions.net`.
+
+Set them with GitHub CLI:
+```bash
+# from repo root
+gh secret set FIREBASE_SERVICE_ACCOUNT_NETWARE_326600 < path/to/service-account-netware-326600.json
+firebase functions:secrets:access PASSCODES_ADMIN --project netware-326600 | gh secret set VITE_PASSCODES_ADMIN
+gh variable set VITE_API_BASE_URL --body "https://us-central1-netware-326600.cloudfunctions.net"
+```
+
 ## Technology Stack
 
 - **React 18**: UI library

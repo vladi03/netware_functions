@@ -1,0 +1,75 @@
+name: Deploy Web
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "web/**"
+      - ".github/workflows/deploy-web.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-web-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      FIREBASE_PROJECT_ID: netware-326600
+      FIREBASE_HOSTING_SITE: netware-spurgeon
+      VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+      VITE_PASSCODES_ADMIN_FALLBACK: ${{ secrets.VITE_PASSCODES_ADMIN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install web dependencies
+        run: npm ci
+        working-directory: web
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_NETWARE_326600 }}
+
+      - name: Install Firebase CLI
+        run: npm install --global firebase-tools
+
+      - name: Pull Firebase secrets and write production env
+        run: |
+          PASSCODE="$(firebase functions:secrets:access PASSCODES_ADMIN --project "$FIREBASE_PROJECT_ID" 2>/dev/null | tr -d '\r' || true)"
+          if [ -z "$PASSCODE" ]; then
+            PASSCODE="$VITE_PASSCODES_ADMIN_FALLBACK"
+          fi
+          if [ -z "$PASSCODE" ]; then
+            echo "PASSCODES_ADMIN is empty or unavailable in Firebase and GitHub."
+            exit 1
+          fi
+
+          API_BASE_URL="${VITE_API_BASE_URL:-https://us-central1-${FIREBASE_PROJECT_ID}.cloudfunctions.net}"
+          echo "::add-mask::$PASSCODE"
+
+          {
+            echo "VITE_API_BASE_URL=$API_BASE_URL"
+            echo "VITE_PASSCODES_ADMIN=$PASSCODE"
+          } > web/.env.production
+
+      - name: Build web app
+        run: npm run build
+        working-directory: web
+
+      - name: Deploy Firebase Hosting
+        run: firebase deploy --project "$FIREBASE_PROJECT_ID" --only "hosting:$FIREBASE_HOSTING_SITE" --non-interactive
+        working-directory: web
